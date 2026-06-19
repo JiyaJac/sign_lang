@@ -4,7 +4,8 @@ A real-time sign language detector that uses hand-tracking and a trained
 machine learning model to recognize signs through your webcam, build up
 letters into words, and display them live — right in the browser.
 
-<img width="1918" height="963" alt="Screenshot 2026-06-19 114749" src="https://github.com/user-attachments/assets/ed4421c3-a879-4d78-8806-c2c96c853688" />
+<img width="1917" height="967" alt="Screenshot 2026-06-19 115323" src="https://github.com/user-attachments/assets/0075cbdd-cc45-4cde-a2f5-c3c90fe321cc" />
+
 
 
 ## How it works
