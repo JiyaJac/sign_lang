@@ -1,54 +1,81 @@
-# Sign Language Detector — Streamlit Version
+# ✋ Sign Language Detector
 
-This wraps your original `execution.py` logic almost line-for-line — same
-MediaPipe calls, same model, same letter/space/del/next logic — just running
-inside a Streamlit web app instead of a local OpenCV window.
+A real-time sign language detector that uses hand-tracking and a trained
+machine learning model to recognize signs through your webcam, build up
+letters into words, and display them live — right in the browser.
 
-## Files
+
+
+## How it works
+
+1. Your webcam feed is captured in the browser
+2. [MediaPipe](https://github.com/google/mediapipe) detects your hand and extracts 21 landmark points (x, y, z)
+3. A trained `RandomForestClassifier` predicts which sign you're making from those points
+4. Holding a sign steady for a few frames "locks it in" as the current letter
+5. Special signs control the output:
+   - `next` → adds the current letter to the word
+   - `space` → adds a space
+   - `del` → deletes the last letter
+
+## Project structure
+
 ```
-streamlit-sign-app/
-├── app.py             ← your execution.py logic, adapted for the browser camera
-├── requirements.txt
-└── model.pkl          ← you add this (copy from your existing project)
+.
+├── app.py                  # Streamlit app — the deployed detector
+├── model.pkl               # trained RandomForestClassifier
+├── requirements.txt        # dependencies for the deployed app
+│
+└── Required/                # not deployed — used once to produce model.pkl
+    ├── Data_Collection.ipynb     # captures hand landmarks + labels into a CSV
+    ├── Execution.ipynb      # predicts before making app
+    ├── Training.ipynb       # trains the model from the CSV, saves model.pkl
+    └── data1.csv             # collected training samples
 ```
 
-## Step 1 — Add your model
+> The `training/` scripts were used once, offline, to create `model.pkl`.
+> The deployed app only loads that file and runs predictions — it doesn't
+> retrain or touch the CSV.
 
-Copy your trained `model.pkl` into this folder, next to `app.py`.
-
-## Step 2 — Run it locally (test first)
+## Running locally
 
 ```bash
 pip install -r requirements.txt
 streamlit run app.py
 ```
 
-It opens in your browser automatically. Click "Start" on the camera widget
-and allow camera access.
+This opens the app in your browser. Click **Start** on the camera widget and
+allow camera access.
 
-## Step 3 — Deploy for free
+## Retraining the model (optional)
 
-**Option A: Streamlit Community Cloud (easiest)**
-1. Push this folder to a GitHub repo
-2. Go to https://share.streamlit.io
-3. "New app" → select your repo → set main file to `app.py`
-4. Deploy — you get a public URL instantly
+If you want to collect your own data and retrain:
 
-**Option B: Hugging Face Spaces**
-1. Go to https://huggingface.co/new-space
-2. Choose "Streamlit" as the SDK
-3. Upload these files (or connect via git)
-4. It builds and hosts automatically
+```bash
+cd training
+python collect_data.py     # collects landmarks for each sign into data1.csv
+python train_model.py      # trains a new model.pkl from data1.csv
+```
 
-Both are free and made for exactly this kind of app — Python + camera + ML
-model, no separate frontend/backend split needed.
+Then copy the new `model.pkl` into the project root to use it in `app.py`.
 
-## What's different from execution.py
+## Deployment
 
-- `cv2.imshow()` / `cv2.waitKey()` are removed — Streamlit's camera widget
-  replaces the OpenCV window entirely
-- State (`word`, `current_letter`, `count`, `prev_prediction`, `inserted`)
-  now lives inside a `SignProcessor` class instead of loose variables,
-  because Streamlit needs it to persist across video frames
-- Everything else — MediaPipe calls, model.predict, the space/del/next
-  logic — is copied directly from your script
+This app is built to deploy for free on either:
+
+- **[Streamlit Community Cloud](https://share.streamlit.io)** — connect this repo, set the main file to `app.py`, deploy
+- **[Hugging Face Spaces](https://huggingface.co/new-space)** — choose the Streamlit SDK, upload these files
+
+Both platforms support the webcam + Python + ML stack this app needs out of
+the box.
+
+## Tech stack
+
+- [Streamlit](https://streamlit.io) — web app framework
+- [streamlit-webrtc](https://github.com/whitphx/streamlit-webrtc) — browser camera streaming
+- [MediaPipe](https://github.com/google/mediapipe) — hand landmark detection
+- [scikit-learn](https://scikit-learn.org) — RandomForestClassifier
+- [OpenCV](https://opencv.org) — image processing
+
+## License
+
+MIT
